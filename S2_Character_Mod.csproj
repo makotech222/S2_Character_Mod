@@ -1,0 +1,175 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{8B2B1505-555C-43AF-8252-4CC2D29026D1}</ProjectGuid>
+    <TargetFramework>net6.0</TargetFramework>
+    <RootNamespace>Suikoden_Fix</RootNamespace>
+    <AssemblyName>S2CharacterMod</AssemblyName>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>latest</LangVersion>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <GamePath Condition="'$(GamePath)' == ''">C:\Games\Suikoden I and II HD Remaster</GamePath>
+    <OutputPath>$(GamePath)\BepInEx\plugins\</OutputPath>
+    <PluginDir>$(GamePath)\BepInEx\plugins</PluginDir>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+	<ZipFileName>$(MSBuildProjectName).zip</ZipFileName>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="build\**" />
+    <EmbeddedResource Remove="build\**" />
+    <None Remove="build\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove=".gitignore" />
+    <None Remove="LICENSE.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="0Harmony">
+      <HintPath>$(GamePath)\BepInEx\core\0Harmony.dll</HintPath>
+	  <Private>false</Private>
+    </Reference>
+    <Reference Include="BepInEx.Core">
+      <HintPath>$(GamePath)\BepInEx\core\BepInEx.Core.dll</HintPath>
+	  <Private>false</Private>
+    </Reference>
+    <Reference Include="BepInEx.Unity.IL2CPP">
+      <HintPath>$(GamePath)\BepInEx\core\BepInEx.Unity.IL2CPP.dll</HintPath>
+	  <Private>false</Private>
+    </Reference>
+    <Reference Include="BepInEx.Preloader.Core">
+      <HintPath>$(GamePath)\BepInEx\core\BepInEx.Preloader.Core.dll</HintPath>
+	  <Private>false</Private>
+    </Reference>
+    <Reference Include="Il2CppInterop.Runtime">
+      <HintPath>$(GamePath)\BepInEx\core\Il2CppInterop.Runtime.dll</HintPath>
+	  <Private>false</Private>
+    </Reference>
+    <Reference Include="GSD1">
+      <HintPath>$(GamePath)\BepInEx\interop\GSD1.dll</HintPath>
+	  <Private>false</Private>
+      <Aliases>GSD1</Aliases>
+    </Reference>
+    <Reference Include="GSD2">
+      <HintPath>$(GamePath)\BepInEx\interop\GSD2.dll</HintPath>
+	  <Private>false</Private>
+      <Aliases>GSD2</Aliases>
+    </Reference>
+    <Reference Include="GSDShare">
+      <HintPath>$(GamePath)\BepInEx\interop\GSDShare.dll</HintPath>
+	  <Private>false</Private>
+    </Reference>
+    <Reference Include="FrameWork">
+      <HintPath>$(GamePath)\BepInEx\interop\FrameWork.dll</HintPath>
+	  <Private>false</Private>
+    </Reference>
+    <Reference Include="Il2Cppmscorlib">
+      <HintPath>$(GamePath)\BepInEx\interop\Il2Cppmscorlib.dll</HintPath>
+	  <Private>false</Private>
+    </Reference>
+    <Reference Include="Il2CppSystem">
+      <HintPath>$(GamePath)\BepInEx\interop\Il2CppSystem.dll</HintPath>
+	  <Private>false</Private>
+    </Reference>
+    <Reference Include="Il2CppSystem.Core">
+      <HintPath>$(GamePath)\BepInEx\interop\Il2CppSystem.Core.dll</HintPath>
+	  <Private>false</Private>
+    </Reference>
+    <Reference Include="ShareUI">
+      <HintPath>$(GamePath)\BepInEx\interop\ShareUI.dll</HintPath>
+	  <Private>false</Private>
+    </Reference>
+    <Reference Include="Unity.Addressables">
+      <HintPath>$(GamePath)\BepInEx\interop\Unity.Addressables.dll</HintPath>
+	  <Private>false</Private>
+    </Reference>
+    <Reference Include="Unity.InputSystem">
+      <HintPath>$(GamePath)\BepInEx\interop\Unity.InputSystem.dll</HintPath>
+	  <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>$(GamePath)\BepInEx\interop\UnityEngine.dll</HintPath>
+	  <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>$(GamePath)\BepInEx\interop\UnityEngine.CoreModule.dll</HintPath>
+	  <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>$(GamePath)\BepInEx\interop\UnityEngine.InputLegacyModule.dll</HintPath>
+	  <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.InputModule">
+      <HintPath>$(GamePath)\BepInEx\interop\UnityEngine.InputModule.dll</HintPath>
+	  <Private>false</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>$(GamePath)\BepInEx\interop\UnityEngine.UI.dll</HintPath>
+	  <Private>false</Private>
+    </Reference>
+    <Reference Include="DOTween">
+      <HintPath>$(GamePath)\BepInEx\interop\DOTween.dll</HintPath>
+	  <Private>false</Private>
+    </Reference>
+    <Reference Include="DOTweenPro">
+      <HintPath>$(GamePath)\BepInEx\interop\DOTweenPro.dll</HintPath>
+	  <Private>false</Private>
+    </Reference>
+    <Reference Include="DOTweenPro.Scripts">
+      <HintPath>$(GamePath)\BepInEx\interop\DOTweenPro.Scripts.dll</HintPath>
+	  <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<ContentWithTargetPath Include="LICENSE.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  <TargetPath>%(Filename)%(Extension)</TargetPath>
+    </ContentWithTargetPath>
+  </ItemGroup>
+	
+  <!-- Custom target to zip the output after publish -->
+  <Target Name="ZipOutputAfterPublish" AfterTargets="Publish">
+    <Message Text="PublishDir: $(PublishDir)" Importance="high" />
+    <Message Text="ZipFileName: $(ZipFileName)" Importance="high" />
+
+    <Error Condition="!Exists('$(PublishDir)')" Text="PublishDir '$(PublishDir)' does not exist!" />
+
+    <!-- Create the ZIP file using PowerShell (Windows) or zip (non-Windows) -->
+    <Exec Condition="'$(OS)' == 'Windows_NT'" Command="powershell -NoProfile -Command &quot;Get-ChildItem -Path '$(PublishDir)' -Exclude '$(MSBuildProjectName).deps.json', '$(ZipFileName)' | Compress-Archive -DestinationPath '$(ProjectDir)build\$(ZipFileName)' -Force&quot;" />
+    <Exec Condition="'$(OS)' != 'Windows_NT'" Command="zip -r '$(ProjectDir)build\$(ZipFileName)' '$(PublishDir)' -x '$(MSBuildProjectName).deps.json' '$(ZipFileName)'" />
+
+    <Message Text="Zipped publish output to $(ProjectDir)build\$(ZipFileName)" Importance="high" />
+  </Target>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="xcopy /y $(ProjectDir)$(OutDir)S2CharacterMod.dll &quot;$(PluginDir)&quot;&#xD;&#xA;xcopy /y $(ProjectDir)$(OutDir)S2CharacterMod.pdb &quot;$(PluginDir)&quot;" />
+  </Target>
+</Project>
