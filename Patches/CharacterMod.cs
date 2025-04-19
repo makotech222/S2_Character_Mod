@@ -3,28 +3,32 @@ extern alias GSD2;
 
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using HarmonyLib;
+using Il2CppSystem.Runtime.Remoting.Messaging;
+using Il2CppSystem.Threading;
 using static GSD1::Saru_h;
 
 namespace Suikoden_Fix.Patches;
 
 public class CharacterMod
 {
-    public static bool ForceRecreate { get; set; }
-    public static bool MaxAll { get; set; }
+    public static bool MaxGrowthRates { get; set; }
+    public static bool MaxRuneAffinities { get; set; }
+    public static bool MaxRuneLevels { get; set; }
 
     [HarmonyPatch(typeof(GSD2.CHARA_DATA), nameof(GSD2.CHARA_DATA.UnityEngine_ISerializationCallbackReceiver_OnAfterDeserialize))]
     [HarmonyPostfix]
     private static void AfterDeserialize(GSD2.CHARA_DATA __instance)
     {
-        if (!Character.ConfigExists() || ForceRecreate || MaxAll)
+        var charNames = Character.PlayerOffsetsString.Split(Environment.NewLine).ToList();
+        if (!Character.ConfigExists())
         {
-            var characterData = new List<Character>();
-            var charNames = Character.PlayerOffsetsString.Split(Environment.NewLine).ToList();
+            var rawCharacterData = new List<Character>();
             for (int i = 0; i < __instance.c_kotei_dat.Count; i++)
             {
                 GSD2.C_KOTEI_DAT kotei = __instance.c_kotei_dat[i];
@@ -37,35 +41,70 @@ public class CharacterMod
                     continue;
                 }
                 string name = charNames[i].Split(" - ")[0];
-                characterData.Add(new Character(name, i, kotei, MaxAll));
+                rawCharacterData.Add(new Character(name, i, kotei));
+            }
+            Character.Save(rawCharacterData);
+        }
+        var characterData = Character.Load();
+        if (MaxGrowthRates || MaxRuneLevels || MaxRuneAffinities)
+        {
+            foreach (var c in characterData)
+            {
+                if (MaxGrowthRates)
+                {
+                    c.Str = 8;
+                    c.Mag = 8;
+                    c.Prot = 8;
+                    c.Mdf = 8;
+                    c.Tech = 8;
+                    c.Spd = 8;
+                    c.Luck = 8;
+                    c.Hp = 8;
+                }
+                if (MaxRuneLevels)
+                {
+                    c.HeadLev = 1;
+                    c.RHLev = 1;
+                    c.LHLev = 1;
+                    c.RuneConfiguration_soubi_henkou = 0;
+                }
+                if (MaxRuneAffinities)
+                {
+                    c.FireAff = 1;
+                    c.WaterAff = 1;
+                    c.WindAff = 1;
+                    c.EarthAff = 1;
+                    c.LightningAff = 1;
+                    c.ResurrectionAff = 1;
+                    c.DarkAff = 1;
+                    c.BrightAff = 1;
+                }
             }
             Character.Save(characterData);
         }
+        var characterDataDict = Character.Load().ToDictionary(x => x.Name);
+        for (int i = 0; i < __instance.c_kotei_dat.Count; i++)
         {
-            var characterData = Character.Load().ToDictionary(x => x.Name);
-            var charNames = Character.PlayerOffsetsString.Split(Environment.NewLine).ToList();
-            for (int i = 0; i < __instance.c_kotei_dat.Count; i++)
+            GSD2.C_KOTEI_DAT kotei = __instance.c_kotei_dat[i];
+            if (kotei.okori_panic == 0) // seems to be null characters
             {
-                GSD2.C_KOTEI_DAT kotei = __instance.c_kotei_dat[i];
-                if (kotei.okori_panic == 0) // seems to be null characters
-                {
-                    continue;
-                }
-                if (charNames.Count <= i) // Theres like 3 characters that are unaccounted for in name list, dunno who they belong to
-                {
-                    continue;
-                }
-                string name = charNames[i].Split(" - ")[0];
-                if (!characterData.ContainsKey(name))
-                {
-                    Plugin.Log.LogError($"Can't find character named {name}");
-                    continue;
-                }
-                var loadedCharacter = characterData[name];
-                loadedCharacter.WriteToKotei(kotei);
+                continue;
             }
+            if (charNames.Count <= i) // Theres like 3 characters that are unaccounted for in name list, dunno who they belong to
+            {
+                continue;
+            }
+            string name = charNames[i].Split(" - ")[0];
+            if (!characterDataDict.ContainsKey(name))
+            {
+                Plugin.Log.LogError($"Can't find character named {name}");
+                continue;
+            }
+            var loadedCharacter = characterDataDict[name];
+            loadedCharacter.WriteToKotei(kotei);
         }
     }
+
 }
 
 public class Character
@@ -96,6 +135,10 @@ public class Character
     public byte HeadLev { get; set; }
     public byte RHLev { get; set; }
     public byte LHLev { get; set; }
+    public byte RuneConfiguration_soubi_henkou { get; set; }
+    public byte EquipmentConfiguration_soubi_kanou { get; set; }
+    public byte okori_panic { get; set; }
+    public List<byte> monsyo_seigen { get; set; }
 
     //mon_kosu_type == rune level unlocks
     //mon_zoku_aisyo == Rune Affinity
@@ -103,7 +146,7 @@ public class Character
     public Character()
     { }
 
-    public Character(string name, int index, GSD2.C_KOTEI_DAT kotei, bool maxStats)
+    public Character(string name, int index, GSD2.C_KOTEI_DAT kotei)
     {
         Name = name;
         Index = index;
@@ -124,34 +167,14 @@ public class Character
         ResurrectionAff = low(kotei.mon_zoku_aisyo[2]);
         DarkAff = high(kotei.mon_zoku_aisyo[3]);
         BrightAff = low(kotei.mon_zoku_aisyo[3]);
+        this.RuneConfiguration_soubi_henkou = kotei.soubi_henkou;
+        this.EquipmentConfiguration_soubi_kanou = kotei.soubi_kanou;
+        this.okori_panic = kotei.okori_panic;
+        this.monsyo_seigen = kotei.monsyo_seigen.ToList();
 
         HeadLev = kotei.mon_kosu_type[0];
         RHLev = kotei.mon_kosu_type[1];
         LHLev = kotei.mon_kosu_type[2];
-        if (maxStats)
-        {
-            Str = 8;
-            Mag = 8;
-            Prot = 8;
-            Mdf = 8;
-            Tech = 8;
-            Spd = 8;
-            Luck = 8;
-            Hp = 8;
-
-            FireAff = 1;
-            WaterAff = 1;
-            WindAff = 1;
-            EarthAff = 1;
-            LightningAff = 1;
-            ResurrectionAff = 1;
-            DarkAff = 1;
-            BrightAff = 1;
-
-            HeadLev = 1;
-            RHLev = 1;
-            LHLev = 1;
-        }
     }
 
     public static void Save(List<Character> characters)
@@ -195,6 +218,14 @@ public class Character
         kotei.seicyo_type[1] = setByte(Prot, Mdf);
         kotei.seicyo_type[2] = setByte(Tech, Spd);
         kotei.seicyo_type[3] = setByte(Luck, Hp);
+        kotei.soubi_henkou = this.RuneConfiguration_soubi_henkou;
+        kotei.soubi_kanou = this.EquipmentConfiguration_soubi_kanou;
+
+        kotei.okori_panic = kotei.okori_panic;
+        for (int i = 0; i < kotei.monsyo_seigen.Length; i++)
+        {
+            kotei.monsyo_seigen[i] = this.monsyo_seigen[i];
+        }
     }
 
     private byte low(byte val)
@@ -291,4 +322,19 @@ Mokumoku - 111E23E4
 Chuchara - 111E23F6
 Jowy 2 - 111E2408
 ";
+}
+
+public class Battle
+{
+    public int Index { get; set; }
+    public List<WarCharacter> WarCharacters { get; set; }
+}
+
+public class WarCharacter
+{
+    public byte attack { get; set; }
+    public byte defense { get; set; }
+    public string Name { get; set; }
+    public int name { get; set; }
+    public int big_name { get; set; }
 }

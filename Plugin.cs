@@ -7,7 +7,7 @@ using System;
 
 namespace Suikoden_Fix;
 
-[BepInPlugin("s2_character_mod", "S2 Character Mod", "1.0.0")]
+[BepInPlugin("s2_character_mod", "S2 Character Mod", "1.1.0")]
 public partial class Plugin : BasePlugin
 {
     public new static ManualLogSource Log;
@@ -23,9 +23,9 @@ public partial class Plugin : BasePlugin
 
     public void LoadConfig()
     {
-        CharacterMod.ForceRecreate = Config.Bind("1. General", "Force Recreate Character JSON", false, "If true, will export and overwrite the character json to default values.").Value;
-        CharacterMod.MaxAll = Config.Bind("1. General", "Max All Stats", false, "If true, all entries in character json file will get max stat growth, max rune affinities, and all rune slots unlocked").Value;
-        Config.GetSetting<bool>("1. General", "Force Recreate Character JSON").Value = false;
+        CharacterMod.MaxGrowthRates = Config.Bind("1. General", "Max Stat Growth Rates", false, "If true, all entries in character json file will get max stat growth").Value;
+        CharacterMod.MaxRuneAffinities = Config.Bind("1. General", "Max Rune Affinities", false, "If true, all entries in character json file will get max rune affinities").Value;
+        CharacterMod.MaxRuneLevels = Config.Bind("1. General", "Max Rune Levels", false, "If true, all entries in character json file will get all rune slots unlocked").Value;
         Config.Save();
     }
 
